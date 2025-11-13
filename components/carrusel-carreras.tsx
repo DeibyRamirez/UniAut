@@ -12,6 +12,7 @@ interface Carrera {
   titulo: string;
   descripcion: string;
   imagen?: string;
+  imagenR? : string;
 }
 
 interface CarruselCarrerasProps {
@@ -44,13 +45,13 @@ export function CarruselCarreras({ carreras }: CarruselCarrerasProps) {
             key={carrera._id}
             className="flex-[0_0_85%] md:flex-[0_0_45%] lg:flex-[0_0_30%] mx-3 rounded-2xl shadow-xl bg-white/10 backdrop-blur-lg border border-white/20 overflow-hidden transition-transform duration-300 hover:scale-[1.02]"
           >
-            <div className="relative w-full h-56 md:h-64">
+            <div className="relative w-full h-100 md:h-[32rem]">
               <Image
-                src={carrera.imagen || "/img/default.jpg"}
-                alt={carrera.titulo}
-                fill
-                className="object-cover"
-                loading="lazy"
+              src={carrera.imagenR || "/img/default.jpg"}
+              alt={carrera.titulo}
+              fill
+              className="object-cover"
+              loading="lazy"
               />
             </div>
             <div className="p-5 text-left text-white">
