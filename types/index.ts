@@ -6,6 +6,7 @@ export interface Carrera {
   modalidad: "Presencial" | "Virtual" | "Híbrida"
   descripcion: string
   imagen: string
+  imagenR: string 
   duracion: string
   facultad: string
 }
