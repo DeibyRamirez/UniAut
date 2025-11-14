@@ -2,6 +2,9 @@ import { NextResponse } from "next/server"
 import { carrerasMock } from "@/lib/data-mock"
 import clientPromise, { COLLECTIONS } from "@/lib/mongodb";
 
+// ===============================
+// ⚙️ GET: Obtener todas las carreras
+// ===============================
 export async function GET() {
   try {
     
@@ -33,5 +36,49 @@ export async function GET() {
       },
       { status: 500 },
     )
+  }
+}
+
+// ===============================
+// ⚙️ POST: Crear una carrera
+// ===============================
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+
+    // Validación básica
+    if (!body.titulo || !body.descripcion) {
+      return NextResponse.json(
+        { success: false, error: "Faltan campos obligatorios" },
+        { status: 400 }
+      );
+    }
+
+    const client = await clientPromise;
+    const db = client.db("UniBoost");
+
+    const newCarrera = {
+      titulo: body.titulo,
+      descripcion: body.descripcion,
+      duracion: body.duracion || null,
+      createdAt: new Date(),
+    };
+
+    const result = await db.collection(COLLECTIONS.CARRERAS).insertOne(newCarrera);
+
+    return NextResponse.json(
+      { success: true, data: { ...newCarrera, _id: result.insertedId } },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Error creando carrera:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Error desconocido",
+      },
+      { status: 500 }
+    );
   }
 }
