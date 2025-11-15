@@ -47,7 +47,7 @@ export function CarruselCarreras({ carreras }: CarruselCarrerasProps) {
           >
             <div className="relative w-full h-100 md:h-[32rem]">
               <Image
-              src={carrera.imagenR || "/img/default.jpg"}
+              src={carrera.imagenR || "/img/ingenieriaElectronica.png"}
               alt={carrera.titulo}
               fill
               className="object-cover"

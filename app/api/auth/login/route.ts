@@ -1,7 +1,6 @@
 // app/api/auth/login/route.ts
 import { NextResponse } from "next/server"
-import db from "@/lib/mongodb"
-import clientPromise, { COLLECTIONS } from "@/lib/mongodb";
+import clientPromise, { COLLECTIONS } from "@/lib/mongodb"
 
 export async function POST(request: Request) {
     try {
@@ -13,7 +12,6 @@ export async function POST(request: Request) {
         const { correoElectronico, password } = body
 
         if (!correoElectronico || !password) {
-            console.log("❌ Campos faltantes")
             return NextResponse.json(
                 {
                     success: false,
@@ -23,48 +21,17 @@ export async function POST(request: Request) {
             )
         }
 
-        console.log("🔍 Buscando usuario:", correoElectronico)
+        const client = await clientPromise
+        const db = client.db('UniBoost')
+        
+        // Buscar usuario - nota que usamos correoelectronico (en minúsculas)
+        const usuario = await db.collection(COLLECTIONS.USUARIOS).findOne({
+            correoelectronico: correoElectronico.toLowerCase()
+        })
 
-        // Verificar conexión a la base de datos
-        let client
-        try {
-            client = await db
-            console.log("✅ Conexión a MongoDB establecida")
-        } catch (dbError) {
-            console.error("❌ Error de conexión a MongoDB:", dbError)
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: "Error de conexión a la base de datos"
-                },
-                { status: 500 }
-            )
-        }
+        console.log("👤 Usuario encontrado:", usuario ? "Sí" : "No")
 
-        // Buscar usuario
-        let usuario
-        try {
-            const db = client.db('UniBoost');
-            usuario = await db.collection(COLLECTIONS.USUARIOS).findOne({
-                correoelectronico: correoElectronico,
-                password: password
-            })
-
-            console.log("👤 Usuario encontrado:", usuario ? "Sí" : "No")
-        } catch (findError) {
-            console.error("❌ Error buscando usuario:", findError)
-            return NextResponse.json(
-                {
-                    success: false,
-                    error: "Error buscando usuario"
-                },
-                { status: 500 }
-            )
-        }
-
-        // Verificar si el usuario existe
         if (!usuario) {
-            console.log("❌ Usuario no encontrado")
             return NextResponse.json(
                 {
                     success: false,
@@ -74,14 +41,11 @@ export async function POST(request: Request) {
             )
         }
 
-        console.log("🔑 Verificando contraseña...")
-
-        // Verificar contraseña
+        // ⚠️ PROBLEMA: Estás comparando contraseñas en texto plano
+        // SOLUCIÓN TEMPORAL (para testing) - luego implementa bcrypt
         const passwordValido = password === usuario.password
-        console.log("Contraseña válida:", passwordValido)
-
+        
         if (!passwordValido) {
-            console.log("❌ Contraseña incorrecta")
             return NextResponse.json(
                 {
                     success: false,
@@ -91,28 +55,28 @@ export async function POST(request: Request) {
             )
         }
 
-        console.log("✅ Login exitoso para:", usuario.correoElectronico)
+        console.log("✅ Login exitoso para:", usuario.correoelectronico)
 
+        // Datos del usuario sin la contraseña
         const userData = {
             id: usuario._id.toString(),
             nombreCompleto: usuario.nombreCompleto,
             correoElectronico: usuario.correoelectronico,
+            // Agrega más campos si los necesitas
         }
 
-        const response = NextResponse.json({
+        return NextResponse.json({
             success: true,
             user: userData,
             message: "Login exitoso"
         })
-
-        return response
 
     } catch (error) {
         console.error("💥 Error general en login:", error)
         return NextResponse.json(
             {
                 success: false,
-                error: "Error interno del servidor: " + (error instanceof Error ? error.message : 'Unknown error')
+                error: "Error interno del servidor"
             },
             { status: 500 }
         )

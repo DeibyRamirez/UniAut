@@ -1,28 +1,23 @@
-import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/next'
-import './globals.css'
+// app/layout.tsx
+import type { Metadata } from "next";
+import "./globals.css";
+import ClientAuthGate from "@/components/ClientAuthGate";
 
-const _geist = Geist({ subsets: ["latin"] });
-const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
-}
+  title: "v0 App",
+  description: "Created with v0",
+};
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`font-sans antialiased`}>
-        {children}
-        <Analytics />
+    <html lang="es">
+      <body className="font-sans antialiased">
+        {/* ClientAuthGate decide en el cliente si envuelve en AuthProvider */}
+        <ClientAuthGate>
+          {children}
+        </ClientAuthGate>
       </body>
     </html>
-  )
+  );
 }

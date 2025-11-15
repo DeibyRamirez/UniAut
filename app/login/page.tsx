@@ -1,49 +1,41 @@
+// app/login/page.tsx
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
+
 import { useRouter } from "next/navigation"
+import { useAuth } from "../context/AuthContext"
 
 export default function Login() {
     const [formData, setFormData] = useState({
         correoElectronico: "",
         password: ""
     })
-    const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
+    const { login, user, loading } = useAuth()
     const router = useRouter()
 
+    // Redirigir si ya está autenticado
+    useEffect(() => {
+        if (user) {
+            router.push("/admin/carreras")
+        }
+    }, [user, router])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        setLoading(true)
         setError("")
 
-        try {
-            // Aquí iría tu lógica de autenticación real
-            const response = await fetch("/api/auth/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(formData),
-            })
+        const success = await login(formData.correoElectronico, formData.password)
 
-            const data = await response.json()
-
-            if (data.success) {
-                // Redirigir a la página de admin
-                router.push("/admin/carreras")
-            } else {
-                setError("Credenciales incorrectas")
-            }
-        } catch (error) {
-            setError("Error de conexión")
-        } finally {
-            setLoading(false)
+        if (success) {
+            // La redirección se maneja automáticamente en el useEffect
+        } else {
+            setError("Credenciales incorrectas. Por favor, verifica tus datos.")
         }
     }
 
@@ -52,6 +44,30 @@ export default function Login() {
             ...formData,
             [e.target.name]: e.target.value
         })
+    }
+
+    // Mostrar loading mientras verifica autenticación
+    if (loading && !user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600 dark:text-gray-400">Verificando...</p>
+                </div>
+            </div>
+        )
+    }
+
+    // Si ya está autenticado, mostrar loading de redirección
+    if (user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-blue-900">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600 dark:text-gray-400">Redirigiendo...</p>
+                </div>
+            </div>
+        )
     }
 
     return (
@@ -75,8 +91,14 @@ export default function Login() {
 
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
+                        {error && (
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-3 dark:bg-red-900/20 dark:border-red-800">
+                                <p className="text-red-700 dark:text-red-400 text-sm">{error}</p>
+                            </div>
+                        )}
+
                         <div className="space-y-2">
-                            <Label htmlFor="username" className="text-sm font-medium">
+                            <Label htmlFor="correoElectronico" className="text-sm font-medium">
                                 Correo
                             </Label>
                             <div className="relative">
@@ -88,6 +110,7 @@ export default function Login() {
                                     value={formData.correoElectronico}
                                     onChange={handleChange}
                                     required
+                                    disabled={loading}
                                     className="pl-10 py-2.5 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 transition-colors"
                                 />
                                 <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,6 +132,7 @@ export default function Login() {
                                     value={formData.password}
                                     onChange={handleChange}
                                     required
+                                    disabled={loading}
                                     className="pl-10 py-2.5 border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:ring-blue-500 transition-colors"
                                 />
                                 <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,8 +143,7 @@ export default function Login() {
 
                         <div className="flex items-center justify-between text-sm">
                             <label className="flex items-center">
-                                {/* <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                <span className="ml-2 text-gray-600 dark:text-gray-400">Recordarme</span> */}
+                                {/* Opcional: Checkbox para recordar sesión */}
                             </label>
                             <a href="#" className="text-blue-600 hover:text-blue-500 transition-colors font-medium">
                                 ¿Olvidaste tu contraseña?

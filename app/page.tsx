@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { CarruselCarreras } from "@/components/carrusel-carreras"
 
+
 export default async function HomePage() {
   const API = "http://localhost:3000"
   const response = await fetch(`${API}/api/carreras`, { cache: "no-store" });
@@ -27,7 +28,7 @@ export default async function HomePage() {
               <img
                 src="/img/logouniboost.png"
                 alt="Logo Uniboost"
-                className="w-12 h-12 rounded-xl object-contain shadow-lg transition-transform group-hover:scale-105" 
+                className="w-12 h-12 rounded-xl object-contain shadow-lg transition-transform group-hover:scale-105"
               />
             </Link>
 
@@ -36,7 +37,7 @@ export default async function HomePage() {
                 href="https://www.uniautonoma.edu.co"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-secondary transition-all duration-300 hover:scale-105 text-sm" 
+                className="hover:text-secondary transition-all duration-300 hover:scale-105 text-sm"
               >
                 Sitio Oficial
               </Link>
@@ -45,12 +46,14 @@ export default async function HomePage() {
                   Únete a la Comunidad
                 </Button>
               </Link>
+              
+                <Link href="/login">
+                  <Button variant="secondary" size="sm" className="shadow-lg hover:shadow-xl transition-all text-sm"> {/* Agregado text-sm */}
+                    Iniciar Sesion
+                  </Button>
+                </Link>
+              
 
-              <Link href="/login">
-                <Button variant="secondary" size="sm" className="shadow-lg hover:shadow-xl transition-all text-sm"> {/* Agregado text-sm */}
-                  Iniciar Sesion
-                </Button>
-              </Link>
             </nav>
           </div>
         </div>

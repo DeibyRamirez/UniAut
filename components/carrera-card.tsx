@@ -42,7 +42,7 @@ export function CarreraCard({ carrera }: CarreraCardProps) {
           {/* Imagen */}
           <div className="relative w-full"> {/* Altura mejorada */}
             <Image
-              src={carrera.imagenR || "/placeholder.svg"}
+              src={carrera.imagenR || "/img/ingenieriaElectronica.png"}
               alt={carrera.titulo}
               width={600} // Ajusta según necesites
               height={400} // Ajusta según necesites

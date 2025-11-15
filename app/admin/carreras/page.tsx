@@ -23,7 +23,10 @@ import {
     SelectValue
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { Plus, Edit, Trash2, Video, Save, X } from "lucide-react"
+import { Plus, Edit, Trash2, Video, Save, X, LogOut } from "lucide-react"
+
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/app/context/AuthContext"
 
 interface Carrera {
     _id: string
@@ -38,12 +41,16 @@ interface Carrera {
 
 export default function AdminCarrerasPage() {
     const [carreras, setCarreras] = useState<Carrera[]>([])
-    const [loading, setLoading] = useState(true)
+    const [loadingCarreras, setLoadingCarreras] = useState(true)
     const [editingCarrera, setEditingCarrera] = useState<Carrera | null>(null)
     const [videoUrl, setVideoUrl] = useState("")
     const [isVideoDialogOpen, setIsVideoDialogOpen] = useState(false)
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+
+    // Auth
+    const { user, loading: authLoading, logout, isAuthenticated } = useAuth()
+    const router = useRouter()
 
     // Estado para nueva carrera
     const [newCarrera, setNewCarrera] = useState({
@@ -56,9 +63,19 @@ export default function AdminCarrerasPage() {
         videoUrl: ""
     })
 
+    // Redirigir si no está autenticado
     useEffect(() => {
-        fetchCarreras()
-    }, [])
+        if (!authLoading && !isAuthenticated) {
+            router.push("/login")
+        }
+    }, [isAuthenticated, authLoading, router])
+
+    // Cargar carreras solo si está autenticado
+    useEffect(() => {
+        if (isAuthenticated) {
+            fetchCarreras()
+        }
+    }, [isAuthenticated])
 
     const fetchCarreras = async () => {
         try {
@@ -68,8 +85,12 @@ export default function AdminCarrerasPage() {
         } catch (error) {
             console.error("Error fetching carreras:", error)
         } finally {
-            setLoading(false)
+            setLoadingCarreras(false)
         }
+    }
+
+    const handleLogout = async () => {
+        await logout()
     }
 
     const handleAddVideo = (carrera: Carrera) => {
@@ -136,7 +157,6 @@ export default function AdminCarrerasPage() {
     const handleEditCarrera = async () => {
         if (!editingCarrera) return
 
-        // Enviar solo los campos necesarios
         const datosParaEnviar = {
             titulo: editingCarrera.titulo,
             descripcion: editingCarrera.descripcion,
@@ -146,19 +166,12 @@ export default function AdminCarrerasPage() {
             facultad: editingCarrera.facultad
         }
 
-        console.log("📤 Enviando:", datosParaEnviar);
-
-
-        console.log("📤 Enviando datos al backend:", editingCarrera); // LOG PARA DEBUG}
-
         try {
             const response = await fetch(`/api/carreras/${editingCarrera._id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(datosParaEnviar)
             })
-
-            console.log("📥 Respuesta del servidor:", response.status); // LOG PARA DEBUG
 
             const result = await response.json()
 
@@ -168,14 +181,11 @@ export default function AdminCarrerasPage() {
                 ))
                 setIsEditDialogOpen(false)
                 setEditingCarrera(null)
-                alert("Carrera actualizada correctamente") // Feedback al usuario
             } else {
                 console.error("Error actualización:", result)
-                alert(`Error: ${result.error}`) // Feedback al usuario
             }
         } catch (err) {
             console.error("Error updating carrera:", err)
-            alert("Error al actualizar la carrera") // Feedback al usuario
         }
     }
 
@@ -208,10 +218,32 @@ export default function AdminCarrerasPage() {
         Híbrida: "bg-purple-100 text-purple-800 border-purple-200",
     }
 
-    if (loading) {
+    // Mostrar loading mientras verifica autenticación
+    if (authLoading) {
         return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Verificando autenticación...</p>
+                </div>
+            </div>
+        )
+    }
+
+    // No mostrar nada si no está autenticado (será redirigido)
+    if (!isAuthenticated) {
+        return null
+    }
+
+    // Loading de carreras
+    if (loadingCarreras) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex justify-center items-center min-h-96">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    </div>
+                </div>
             </div>
         )
     }
@@ -219,13 +251,23 @@ export default function AdminCarrerasPage() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
             <div className="max-w-7xl mx-auto">
-                {/* Header */}
+                {/* Header Actualizado con Logout */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900">Administrar Carreras</h1>
-                        <p className="text-gray-600 mt-2">Gestiona las carreras universitarias disponibles</p>
+                        <p className="text-gray-600 mt-2">
+                            Bienvenido, <span className="font-semibold text-blue-600">{user?.nombreCompleto}</span>
+                        </p>
                     </div>
                     <div className="flex gap-3">
+                        <Button
+                            onClick={handleLogout}
+                            variant="outline"
+                            className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                        >
+                            <LogOut className="w-4 h-4 mr-2" />
+                            Cerrar Sesión
+                        </Button>
                         <Button
                             onClick={() => window.location.href = "/"}
                             variant="outline"
@@ -303,8 +345,6 @@ export default function AdminCarrerasPage() {
                                             </Select>
                                         </div>
 
-
-
                                         <div>
                                             <Label htmlFor="duracion">Duración</Label>
                                             <Input
@@ -339,19 +379,19 @@ export default function AdminCarrerasPage() {
                     </div>
                 </div>
 
-                {/* Carreras Grid */}
+                {/* Resto de tu código permanece igual */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {carreras.map((carrera) => (
                         <Card key={carrera._id} className="hover:shadow-xl transition-all duration-300 border border-gray-200">
-                            {carrera.imagenR && (
-                                <div className="h-48 overflow-hidden rounded-t-lg">
-                                    <img
-                                        src={carrera.imagenR}
-                                        alt={carrera.titulo}
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
-                            )}
+
+                            <div className="h-48 overflow-hidden rounded-t-lg">
+                                <img
+                                    src={carrera.imagenR || "/img/ingenieriaElectronica.png"}
+                                    alt={carrera.titulo}
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+
                             <CardHeader className="pb-3">
                                 <div className="flex justify-between items-start mb-2">
                                     <CardTitle className="text-xl font-bold text-gray-900 line-clamp-2">
@@ -419,7 +459,7 @@ export default function AdminCarrerasPage() {
                     ))}
                 </div>
 
-                {/* Empty State */}
+                {/* Empty State y diálogos permanecen igual */}
                 {carreras.length === 0 && (
                     <div className="text-center py-12">
                         <div className="text-gray-400 text-6xl mb-4">🎓</div>
