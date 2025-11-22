@@ -12,10 +12,12 @@ export interface Carrera {
 }
 
 export interface UsuarioRegistro {
+  _id: any
   nombreCompleto: string
   correoElectronico: string
   telefono: string
   fechaRegistro?: Date
+  rol: string
 }
 
 export interface ApiResponse<T> {

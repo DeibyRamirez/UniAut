@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { ro } from "date-fns/locale"
 
 export default function RegistroPage() {
   const API = "http://localhost:3000"
@@ -17,6 +18,7 @@ export default function RegistroPage() {
     nombreCompleto: "",
     correoElectronico: "",
     telefono: "",
+    rol: "aspirante",
   })
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
@@ -39,7 +41,7 @@ export default function RegistroPage() {
 
       if (data.success) {
         setMessage({ type: "success", text: "¡Registro exitoso! Bienvenido a la comunidad Uniboost." })
-        setFormData({ nombreCompleto: "", correoElectronico: "", telefono: "" })
+        setFormData({ nombreCompleto: "", correoElectronico: "", telefono: "", rol: "aspirante" })
 
         // Redirigir después de 2 segundos
         setTimeout(() => {

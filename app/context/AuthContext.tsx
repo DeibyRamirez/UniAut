@@ -9,6 +9,7 @@ interface User {
     id: string
     nombreCompleto: string
     correoElectronico: string
+    rol: string
 }
 
 // Define el tipo del contexto
@@ -62,6 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 },
                 body: JSON.stringify({ correoElectronico, password })
             })
+            
 
             const data = await response.json()
             console.log("📨 Respuesta del login:", data)

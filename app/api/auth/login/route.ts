@@ -24,9 +24,9 @@ export async function POST(request: Request) {
         const client = await clientPromise
         const db = client.db('UniBoost')
         
-        // Buscar usuario - nota que usamos correoelectronico (en minúsculas)
+        // Buscar usuario - nota que usamos correoElectronico (en minúsculas)
         const usuario = await db.collection(COLLECTIONS.USUARIOS).findOne({
-            correoelectronico: correoElectronico.toLowerCase()
+            correoElectronico: correoElectronico.toLowerCase()
         })
 
         console.log("👤 Usuario encontrado:", usuario ? "Sí" : "No")
@@ -55,14 +55,14 @@ export async function POST(request: Request) {
             )
         }
 
-        console.log("✅ Login exitoso para:", usuario.correoelectronico)
+        console.log("✅ Login exitoso para:", usuario.correoElectronico)
 
         // Datos del usuario sin la contraseña
         const userData = {
             id: usuario._id.toString(),
             nombreCompleto: usuario.nombreCompleto,
-            correoElectronico: usuario.correoelectronico,
-            // Agrega más campos si los necesitas
+            correoElectronico: usuario.correoElectronico,
+            rol: usuario.rol
         }
 
         return NextResponse.json({

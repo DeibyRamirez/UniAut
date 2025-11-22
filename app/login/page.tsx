@@ -21,14 +21,19 @@ export default function Login() {
 
     // Redirigir si ya está autenticado
     useEffect(() => {
-        if (user) {
-            router.push("/admin/carreras")
+        if (user && user.rol === "admin") {
+            router.push("/admin/usuarios")
+        }
+        if (user && user.rol === "admisiones") 
+        {
+            router.push("/admisiones/carreras")
         }
     }, [user, router])
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         setError("")
+
 
         const success = await login(formData.correoElectronico, formData.password)
 
